@@ -23,6 +23,7 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.ContextThemeWrapper;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -496,13 +497,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void showPopupMenu(View v)
     {
-        PopupMenu popup = new PopupMenu(this, v);
+        Context wrapper = new ContextThemeWrapper(this, R.style.PopupMenu);
+        PopupMenu popup = new PopupMenu(wrapper, v);
 
         popup.setOnMenuItemClickListener(this);
 
         popup.inflate(R.menu.popup_menu);
 
         popup.show();
+    }
+
+    @Override
+    public boolean onMenuItemClick(MenuItem item) {
+
+        Toast.makeText(this,"Menu button was clicked", Toast.LENGTH_SHORT).show();
+        return false;
     }
 
     //endregion
@@ -702,10 +711,4 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         this.moveTaskToBack(true);
     }
 
-    @Override
-    public boolean onMenuItemClick(MenuItem item) {
-
-        Toast.makeText(this,"Menu button was clicked", Toast.LENGTH_SHORT).show();
-        return false;
-    }
 }
