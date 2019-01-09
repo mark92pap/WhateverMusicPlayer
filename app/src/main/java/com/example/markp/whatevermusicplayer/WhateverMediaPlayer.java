@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 
+import static com.example.markp.whatevermusicplayer.MainActivity.currentPlaylistContainer;
 import static com.example.markp.whatevermusicplayer.MainActivity.currentSongFragment;
 
 public class WhateverMediaPlayer
@@ -78,7 +79,21 @@ public class WhateverMediaPlayer
     }
 
     public void setRepeat(int repeat) {
-        this.repeat = repeat;
+        if (repeat==0 || repeat==3)
+        {
+            instance.repeatBtn.setBackground(ContextCompat.getDrawable(instance.getApplicationContext(),R.drawable.ic_repeat_blue));
+            this.repeat=0;
+        }
+        else if (repeat==1)
+        {
+            instance.repeatBtn.setBackground(ContextCompat.getDrawable(instance.getApplicationContext(),R.drawable.ic_repeat_orange));
+            this.repeat=1;
+        }
+        else if (repeat==2)
+        {
+            instance.repeatBtn.setBackground(ContextCompat.getDrawable(instance.getApplicationContext(),R.drawable.ic_repeat_one_orange));
+            this.repeat=2;
+        }
     }
 
     public int getShuffle() {
@@ -86,7 +101,18 @@ public class WhateverMediaPlayer
     }
 
     public void setShuffle(int shuffle) {
-        this.shuffle = shuffle;
+        if (shuffle==0 || shuffle==2)
+        {
+            //NO SHUFFLE
+            this.shuffle=0;
+            instance.shuffleBtn.setBackground(ContextCompat.getDrawable(instance.getApplicationContext(),R.drawable.ic_shuffle_blue));
+        }
+        else if (shuffle==1)
+        {
+            //SHUFFLE
+            this.shuffle=1;
+            instance.shuffleBtn.setBackground(ContextCompat.getDrawable(instance.getApplicationContext(),R.drawable.ic_shuffle_orange));
+        }
     }
 
     //endregion
@@ -160,6 +186,9 @@ public class WhateverMediaPlayer
                 currentSongFragment.setAlbumArt();
             }
 
+            instance.updateWidget();
+            instance.playBtn.setBackground(ContextCompat.getDrawable(instance.getApplicationContext(),R.drawable.ic_pause_circle_outline_black_24dp));
+
         }
         catch (IOException e)
         {
@@ -229,6 +258,9 @@ public class WhateverMediaPlayer
     {
         mediaPlayer.pause();
         currentPosition = mediaPlayer.getCurrentPosition();
+
+        instance.pauseWidget();
+        instance.playBtn.setBackground(ContextCompat.getDrawable(instance.getApplicationContext(),R.drawable.ic_play_orange));
     }
 
     public void continueSong()
@@ -236,6 +268,21 @@ public class WhateverMediaPlayer
         mediaPlayer.seekTo(currentPosition);
         mediaPlayer.start();
         instance.changeSeekBar();
+        instance.updateWidget();
+        instance.playBtn.setBackground(ContextCompat.getDrawable(instance.getApplicationContext(),R.drawable.ic_pause_circle_outline_black_24dp));
+    }
+
+    //endregion
+
+    //region Other
+
+    public void navigateToCurrentSongView()
+    {
+        instance.hideAllContainers();
+
+        instance.setCurrentPlaylistContainer();
+
+        currentPlaylistContainer.setCurrentItem(1);
     }
 
     //endregion

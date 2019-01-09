@@ -47,6 +47,7 @@ public class SongRecyclerViewAdapter extends RecyclerView.Adapter<SongRecyclerVi
             public void onClick(View v) {
                 WhateverMediaPlayer.getInstance().setPlaylist((ArrayList)songs);
                 WhateverMediaPlayer.getInstance().playSong(position);
+                WhateverMediaPlayer.getInstance().navigateToCurrentSongView();
             }
         });
 
@@ -55,6 +56,7 @@ public class SongRecyclerViewAdapter extends RecyclerView.Adapter<SongRecyclerVi
             public void onClick(View v) {
                 WhateverMediaPlayer.getInstance().setPlaylist((ArrayList)songs);
                 WhateverMediaPlayer.getInstance().playSong(position);
+                WhateverMediaPlayer.getInstance().navigateToCurrentSongView();
             }
         });
     }

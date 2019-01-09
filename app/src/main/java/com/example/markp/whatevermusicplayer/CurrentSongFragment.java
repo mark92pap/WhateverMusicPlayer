@@ -1,5 +1,6 @@
 package com.example.markp.whatevermusicplayer;
 
+import android.graphics.drawable.Drawable;
 import android.media.Image;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -48,6 +49,7 @@ public class CurrentSongFragment extends Fragment
         {
             Glide.with(this).load(R.drawable.blank).into(this.albumArt);
         }
+
 
     }
 }

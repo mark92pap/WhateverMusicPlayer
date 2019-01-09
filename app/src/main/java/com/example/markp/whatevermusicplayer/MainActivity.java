@@ -1,12 +1,16 @@
 package com.example.markp.whatevermusicplayer;
 
 import android.Manifest;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Handler;
@@ -19,8 +23,11 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.PopupMenu;
+import android.widget.RemoteViews;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,8 +38,9 @@ import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, PopupMenu.OnMenuItemClickListener
 {
     //region Ads
 
@@ -322,7 +330,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    private void setCurrentPlaylistContainer()
+    public void setCurrentPlaylistContainer()
     {
         hideAllContainers();
 
@@ -375,7 +383,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         albumsContainer.setAdapter(albumsPagerAdapter);
     }
 
-    private void hideAllContainers()
+    public void hideAllContainers()
     {
         /*
         allSongsContainer.setVisibility(View.INVISIBLE);
@@ -434,6 +442,44 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     //region UPDATE UI FOR SONG INFO
 
+    public void updateWidget()
+    {
+        Context context = this;
+        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+        RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.whatever_widget);
+        ComponentName thisWidget = new ComponentName(context, WhateverWidget.class);
+
+        int currentSong = mediaPlayer.currentSong;
+        String songName = mediaPlayer.playlist.get(currentSong).getName();
+        String artistName = mediaPlayer.playlist.get(currentSong).getArtist().getName();
+
+        remoteViews.setTextViewText(R.id.songNameWidget, songName+ " - " + artistName);
+
+
+        remoteViews.setImageViewResource(R.id.playBtnWidget,R.drawable.ic_pause_circle_outline_black_24dp);
+
+
+        remoteViews.setImageViewUri(R.id.albumArtWidget,albumArtUri);
+
+        appWidgetManager.updateAppWidget(thisWidget,remoteViews);
+    }
+
+    public void pauseWidget()
+    {
+        Context context = this;
+        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+        RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.whatever_widget);
+        ComponentName thisWidget = new ComponentName(context, WhateverWidget.class);
+
+        //set imageview of play button
+
+
+        remoteViews.setImageViewResource(R.id.playBtnWidget,R.drawable.ic_play_orange);
+
+
+        appWidgetManager.updateAppWidget(thisWidget,remoteViews);
+    }
+
     public void setCurrentSongText(String text)
     {
         songName.setText(text);
@@ -446,12 +492,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     //endregion
 
+    //region PopUpMenu
+
+    private void showPopupMenu(View v)
+    {
+        PopupMenu popup = new PopupMenu(this, v);
+
+        popup.setOnMenuItemClickListener(this);
+
+        popup.inflate(R.menu.popup_menu);
+
+        popup.show();
+    }
+
+    //endregion
+
     @Override
     public void onClick(View v)
     {
         switch (v.getId())
         {
             case R.id.menuBtn:
+                showPopupMenu(v);
                 break;
             case R.id.logo:
                 setAllSongsContainer();
@@ -520,29 +582,38 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+
     @Override
-    protected void onPause() {
-        super.onPause();
-
-
-        if (mediaPlayer.mediaPlayer!=null)
+    protected void onDestroy()
+    {
+        if (mediaPlayer.mediaPlayer.isPlaying())
         {
-            if (mediaPlayer.mediaPlayer.isPlaying())
-            {
-                mediaPlayer.stopPlaying();
-            }
-
+            mediaPlayer.stopPlaying();
         }
+
+
+        //Blank widget
+
+        Context context = this;
+        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+        RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.whatever_widget);
+        ComponentName thisWidget = new ComponentName(context, WhateverWidget.class);
+
+        remoteViews.setTextViewText(R.id.songNameWidget,"Song Title - Artist");
+
+        remoteViews.setImageViewResource(R.id.albumArtWidget,R.drawable.blank);
+        super.onDestroy();
+
 
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onResume() {
+        super.onResume();
 
-        if (mediaPlayer.mediaPlayer.isPlaying())
+        if (mediaPlayer.mediaPlayer!=null)
         {
-            mediaPlayer.stopPlaying();
+            mediaPlayer.navigateToCurrentSongView();
         }
     }
 
@@ -629,5 +700,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //finish();
         onPause();
         this.moveTaskToBack(true);
+    }
+
+    @Override
+    public boolean onMenuItemClick(MenuItem item) {
+
+        Toast.makeText(this,"Menu button was clicked", Toast.LENGTH_SHORT).show();
+        return false;
     }
 }
