@@ -88,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public SeekBar seekBar;
     Handler handler;
     Runnable runnable;
+    int seekBarProgress;
 
     //endregion
 
@@ -249,18 +250,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser)
                 {
-                    mediaPlayer.mediaPlayer.seekTo(progress);
+                    //mediaPlayer.mediaPlayer.seekTo(progress);
+                    startTime.setText(getTimeFromMs(progress));
+                    seekBarProgress = progress;
                 }
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
 
+
+                handler.removeCallbacks(runnable);
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
+                mediaPlayer.mediaPlayer.seekTo(seekBarProgress);
+                handler.postDelayed(runnable,100);
             }
         });
 
@@ -384,16 +390,40 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         albumsContainer.setAdapter(albumsPagerAdapter);
     }
 
+    private void setCreatePlaylistContainer()
+    {
+        hideAllContainers();
+
+        createPlaylistContainer.setVisibility(View.VISIBLE);
+
+        SectionsStatePagerAdapter adapter = new SectionsStatePagerAdapter(getSupportFragmentManager());
+
+        CreatePlaylistFragment createPlaylistFragment = new CreatePlaylistFragment();
+
+        adapter.addFragment(createPlaylistFragment,"currentPlaylistFragment");
+
+        createPlaylistContainer.setAdapter(adapter);
+
+    }
+
+    private void setShowCustomPlaylists()
+    {
+        hideAllContainers();
+
+        createPlaylistContainer.setVisibility(View.VISIBLE);
+
+        SectionsStatePagerAdapter adapter = new SectionsStatePagerAdapter(getSupportFragmentManager());
+
+        ShowCustomPlaylistsFragment customPlaylistsFragment = new ShowCustomPlaylistsFragment();
+
+        adapter.addFragment(customPlaylistsFragment,"customPlaylistsFragment");
+
+        createPlaylistContainer.setAdapter(adapter);
+    }
+
     public void hideAllContainers()
     {
-        /*
-        allSongsContainer.setVisibility(View.INVISIBLE);
-        currentPlaylistContainer.setVisibility(View.INVISIBLE);
-        artistsContainer.setVisibility(View.INVISIBLE);
-        albumsContainer.setVisibility(View.INVISIBLE);
-        createPlaylistContainer.setVisibility(View.INVISIBLE);
-        showCustomPlaylistContainer.setVisibility(View.INVISIBLE);
-        */
+
         allSongsContainer.setVisibility(View.GONE);
         currentPlaylistContainer.setVisibility(View.GONE);
         artistsContainer.setVisibility(View.GONE);
@@ -498,6 +528,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void showPopupMenu(View v)
     {
         Context wrapper = new ContextThemeWrapper(this, R.style.PopupMenu);
+
         PopupMenu popup = new PopupMenu(wrapper, v);
 
         popup.setOnMenuItemClickListener(this);
@@ -510,7 +541,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onMenuItemClick(MenuItem item) {
 
-        Toast.makeText(this,"Menu button was clicked", Toast.LENGTH_SHORT).show();
+        switch (item.getItemId())
+        {
+            case R.id.createPlaylistMenuItem:
+                setCreatePlaylistContainer();
+                break;
+            case R.id.customPlaylistsMenuItem:
+                setShowCustomPlaylists();
+                break;
+        }
+
         return false;
     }
 
